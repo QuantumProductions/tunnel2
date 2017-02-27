@@ -5,12 +5,10 @@ join({Players, Tables, null}, #{name := ChallengerName}) ->
   {ok, {Players, Tables, ChallengerName}};
 join({Players, Tables, ContenderName}, #{name := ChallengerName}) ->
   {ok, TablePid} = table:go(),
-
   Players2 = maps:put(ContenderName,  #{status => playing, table_pid => TablePid},
     Players),
   Players3 = maps:put(ChallengerName, #{status => playing, table_pid => TablePid},
     Players2),
-
   Tables2 = maps:put(TablePid, #{seats => #{x => ContenderName, o => ChallengerName},
                                  status => unstarted}, Tables),
   {ok, {Players3, Tables2, null}}.
