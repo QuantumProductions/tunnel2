@@ -18,8 +18,16 @@ cancel({Players, Tables, ChallengerName}, #{name := ChallengerName}) ->
 cancel(State, _) ->
   {ok, State}.
 
+status({Players, Tables, ChallengerName}, #{name := ChallengerName}) ->
+  {#{status => challenging}, {Players, Tables, ChallengerName}};
+status(State, _) ->
+  {#{status => null}, State}.
+
 handle_call(debug, _, State) ->
   {reply, State, State};
+handle_call({status, PlayerData}, _, State) ->
+  {R, S2} = status(State, PlayerData),
+  {reply, R, S2};
 handle_call({cancel, PlayerData}, _, State) ->
   {Response, State2} = cancel(State, PlayerData),
   {reply, Response, State2};

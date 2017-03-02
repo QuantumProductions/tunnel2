@@ -21,3 +21,14 @@ cancel_test() ->
   s:s(Room, {cancel, #{name => "Marsifrolg"}}),
   {_, _, Challenger} = s:s(Room, debug),
   null = Challenger.
+
+status_test() ->
+  {ok, Room} = room:go(),
+  s:s(Room, {join, #{name => "Marsifrolg"}}),
+  #{status := challenging} = s:s(Room, {status, #{name => "Marsifrolg"}}),
+  #{status := null} = s:s(Room, {status, #{name => "Tremulous.net"}}).
+  % Res.
+  % {_, Tables, _} = s:s(Room, debug),
+  % [FirstPid] = maps:keys(Tables),
+
+  % s:s(Room, {join, #{name => "Blandline"}}),
