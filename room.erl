@@ -13,8 +13,16 @@ join({Players, Tables, ContenderName}, #{name := ChallengerName}) ->
                                  status => unstarted}, Tables),
   {ok, {Players3, Tables2, null}}.
 
+cancel({Players, Tables, ChallengerName}, #{name := ChallengerName}) ->
+  {ok, {Players, Tables, null}};
+cancel(State, _) ->
+  {ok, State}.
+
 handle_call(debug, _, State) ->
   {reply, State, State};
+handle_call({cancel, PlayerData}, _, State) ->
+  {Response, State2} = cancel(State, PlayerData),
+  {reply, Response, State2};
 handle_call({join, PlayerData}, _, State) ->
   {Response, State2} = join(State, PlayerData),
   {reply, Response, State2}.
