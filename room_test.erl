@@ -4,7 +4,7 @@
 join_test() ->
   {ok, Room} = room:go(),
   s:s(Room, {join, #{name => "Marsifrolg"}}),
-  {#{}, #{}, "Marsifrolg"} = s:s(Room, debug),
+  {#{}, #{}, #{name := "Marsifrolg"}} = s:s(Room, debug),
   s:s(Room, {join, #{name => "Blandline"}}),
   {Players, Tables, Challenger} = s:s(Room, debug),
   [FirstPid] = maps:keys(Tables),
@@ -14,17 +14,23 @@ join_test() ->
                        status := unstarted}} = Tables,
    null = Challenger.
 
-cancel_test() ->
+cancel_authorized_test() ->
   {ok, Room} = room:go(),
-  s:s(Room, {join, #{name => "Marsifrolg"}}),
-  {#{}, #{}, "Marsifrolg"} = s:s(Room, debug),
+  {ok, #{auth := Auth}} = s:s(Room, {join, #{name => "Marsifrolg"}}),
+  {#{}, #{}, #{name := "Marsifrolg"}} = s:s(Room, debug),
   s:s(Room, {cancel, #{name => "Marsifrolg"}}),
-  {_, _, Challenger} = s:s(Room, debug),
-  null = Challenger.
+  {_, _, #{name := "Marsifrolg"}} = s:s(Room, debug),
+  s:s(Room, {cancel, #{name => "Marsifrolg", auth => Auth}}),
+  {_, _, null} = s:s(Room, debug).
+  
+
+  % null = Challenger.
 
 status_test() ->
   {ok, Room} = room:go(),
   s:s(Room, {join, #{name => "Marsifrolg"}}),
+  % Debug = s:s(Room, debug),
+  % Debug.
   #{status := challenging} = s:s(Room, {status, #{name => "Marsifrolg"}}),
   #{status := null} = s:s(Room, {status, #{name => "Tremulous.net"}}),
   s:s(Room, {join, #{name => "Blandline"}}),
@@ -32,5 +38,3 @@ status_test() ->
   [FirstPid] = maps:keys(Tables),
   #{status := playing, table_pid := FirstPid} = s:s(Room, {status, #{name => "Marsifrolg"}}),
   #{status := playing, table_pid := FirstPid} = s:s(Room, {status, #{name => "Blandline"}}).
-
-  % s:s(Room, {join, #{name => "Blandline"}}),
