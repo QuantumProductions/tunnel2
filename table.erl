@@ -7,7 +7,7 @@ handle_call(info, _, State) ->
   {reply, State, State}.
 
 init([]) -> 
-  {ok, #{status => unstarted}}.
+  {ok, #{status => playing}}.
 
 go() ->
   gen_server:start_link(?MODULE, [], []).
