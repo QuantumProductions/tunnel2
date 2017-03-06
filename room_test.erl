@@ -22,9 +22,6 @@ cancel_authorized_test() ->
   {_, _, #{name := "Marsifrolg"}} = s:s(Room, debug),
   s:s(Room, {cancel, #{name => "Marsifrolg", auth => Auth}}),
   {_, _, null} = s:s(Room, debug).
-  
-
-  % null = Challenger.
 
 status_test() ->
   {ok, Room} = room:go(),
