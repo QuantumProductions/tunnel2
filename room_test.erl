@@ -26,8 +26,6 @@ cancel_authorized_test() ->
 status_test() ->
   {ok, Room} = room:go(),
   s:s(Room, {join, #{name => "Marsifrolg"}}),
-  % Debug = s:s(Room, debug),
-  % Debug.
   #{status := challenging} = s:s(Room, {status, #{name => "Marsifrolg"}}),
   #{status := null} = s:s(Room, {status, #{name => "Tremulous.net"}}),
   s:s(Room, {join, #{name => "Blandline"}}),
