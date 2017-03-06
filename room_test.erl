@@ -11,7 +11,7 @@ join_test() ->
   #{"Marsifrolg"  := #{status := playing, table_pid := FirstPid},
    "Blandline"    := #{status := playing, table_pid := FirstPid}} = Players,
   #{FirstPid      := #{seats  := #{x := "Marsifrolg", o := "Blandline"},
-                       status := unstarted}} = Tables,
+                       cache := #{status := unstarted}}} = Tables,
    null = Challenger.
 
 cancel_authorized_test() ->

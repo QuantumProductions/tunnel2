@@ -19,8 +19,9 @@ join({Players, Tables, #{name := ContenderName, auth := ContenderAuth}}, #{name 
   ChallengerAuth = generateAuth(),
   Players3 = maps:put(ChallengerName, #{auth => ChallengerAuth, status => playing, table_pid => TablePid},
     Players2),
+  TableCache = s:s(TablePid, info),
   Tables2 = maps:put(TablePid, #{seats => #{x => ContenderName, o => ChallengerName},
-                                 status => unstarted}, Tables),
+                                 cache => TableCache}, Tables),
   {ok, {Players3, Tables2, null}}.
 
 validAuth(Players, Name, Auth) ->
@@ -42,7 +43,6 @@ cancel(matches, State = {_Players, _Tables, #{name := ContenderName}}, Challenge
     _ ->  {{error, bad_sequence}, State}
   end;
 cancel(validate, State = {Players, Tables, #{auth := ContenderAuth}}, #{auth := Auth}) ->
-
   case ContenderAuth == Auth of
     true -> {ok, {Players, Tables, null}};
     false -> {{error, invalid_auth}, State}
