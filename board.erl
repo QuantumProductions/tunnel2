@@ -249,10 +249,10 @@ defaultRank(Rank, Total, File) ->
     _ -> defaultRank(lists:append(Rank, [startingTile(Row + 1, File)]), Total, File)
   end.
 
-spawnTile(x) -> {4, 4};
+spawnTile(x) -> {1, 1};
 spawnTile(o) -> {5, 5}.
 
-startingTile(4, 4) -> {spawn, x, none};
+startingTile(1, 1) -> {spawn, x, none};
 startingTile(5, 5) -> {spawn, o, none};
 
 % startingTile(1, 2) -> {recent, x, none};
