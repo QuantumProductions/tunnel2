@@ -33,3 +33,34 @@ regular_play_test() ->
   s:s(Table, {place, take, x, {3, 2}}),
   #{actions := Actions} = s:s(Table, info),
   {_, o} = Actions.
+
+regular_play_2_test() ->
+  {ok, Table} = table:go(),
+  s:s(Table, {place, take, x, {2, 1}}),
+  s:s(Table, {place, take, o, {4, 5}}),
+  #{actions := Actions} = s:s(Table, info),
+  {_, o} = Actions.
+
+bad_move_test() ->
+  {ok, Table} = table:go(),
+  s:s(Table, {place, take, x, {2, 1}}),
+  s:s(Table, {place, take, o, {4, 5}}),
+  s:s(Table, {place, take, o, {4, 4}}),
+  s:s(Table, {place, take, x, {3, 1}}),
+  s:s(Table, {place, take, x, {3, 4}}),
+  #{actions := Actions} = s:s(Table, info),
+  {#{x := {1, _}}, x} = Actions.
+
+slices_test() ->
+  {ok, Table} = table:go(),
+  s:s(Table, {place, take, x, {2, 1}}),
+  s:s(Table, {place, take, o, {5, 4}}),
+  s:s(Table, {place, take, o, {5, 3}}),
+  s:s(Table, {place, take, x, {3, 1}}),
+  s:s(Table, {place, take, x, {3, 2}}),
+  s:s(Table, {place, take, o, {4, 3}}),
+  s:s(Table, {place, take, o, {3, 3}}),
+  s:s(Table, {place, take, x, {4, 2}}),
+  s:s(Table, {place, take, x, {4, 3}}),
+  #{actions := Actions} = s:s(Table, info),
+  {#{x := {_, 1}, o := {3, _}}, o} = Actions.
