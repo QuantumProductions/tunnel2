@@ -13,4 +13,7 @@ x_takes_2_1_test() ->
   [{spawn, x, none}, {recent, x, none}, _, _, _]  = Row1.
 
 first_turn_action_swap_test() ->
-  false = test.
+  {ok, Table} = table:go(),
+  s:s(Table, {place, take, x, {2, 1}}),
+  #{actions := Actions} = s:s(Table, info),
+  {_, o} = Actions.
