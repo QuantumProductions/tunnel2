@@ -17,3 +17,9 @@ first_turn_action_swap_test() ->
   s:s(Table, {place, take, x, {2, 1}}),
   #{actions := Actions} = s:s(Table, info),
   {_, o} = Actions.
+
+out_of_order_test() ->
+  {ok, Table} = table:go(),
+  s:s(Table, {place, take, o, {4, 5}}),
+  #{actions := Actions} = s:s(Table, info),
+  {_, x} = Actions.

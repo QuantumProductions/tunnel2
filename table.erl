@@ -1,13 +1,19 @@
 -module(table).
 -compile(export_all).
 
+processResult({#{status := _}, _BoardPid, ActionsPid}, {ok, _NewBoard, Slices, RecentTaken}) ->
+  s:s(ActionsPid, {move, Slices, RecentTaken}),
+  ok;
+processResult(_, {error, Error, _Board}) ->
+  {error, Error}.
+
 handle_call(debug, _, State) ->
   {reply, State, State};
 handle_call({place, Action, Player, Position}, _, State = {#{status := _}, BoardPid, ActionsPid}) ->
-  % todo: actions test current player
-  {ok, _NewBoard, Slices, RecentTaken} = s:s(BoardPid, {place, Player, {Action, Player, Position}}),
-  s:s(ActionsPid, {move, Slices, RecentTaken}),
-  {reply, ok, State};  
+  {_, CurrentPlayer} = s:s(ActionsPid, info),
+  Result = s:s(BoardPid, {place, CurrentPlayer, {Action, Player, Position}}),
+  Response = processResult(State, Result),
+  {reply, Response, State};  
 handle_call(info, _, State = {#{status := Status}, BoardPid, ActionsPid}) ->
   BoardInfo = s:s(BoardPid, info),
   ActionsInfo = s:s(ActionsPid, info),
