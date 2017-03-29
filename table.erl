@@ -1,9 +1,9 @@
 -module(table).
 -compile(export_all).
 
-processResult({#{status := _}, _BoardPid, ActionsPid}, {ok, _NewBoard, Slices, RecentTaken}) ->
+processResult({#{status := _}, _BoardPid, ActionsPid}, {ok, NewBoard, Slices, RecentTaken}) ->
   s:s(ActionsPid, {move, Slices, RecentTaken}),
-  okno;
+  {ok, NewBoard};
 processResult(_, {error, Error, _Board}) ->
   {error, Error}.
 

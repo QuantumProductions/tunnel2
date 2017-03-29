@@ -72,9 +72,6 @@ play(valid_table, Tables, TablePid, Name, {Action, Position}) ->
     _ -> {error, bad_team}
   end.
 
-% play(team_found, TablePid, Team, {Action, Position}) ->
-%   s:s(TablePid, {play, Action, Team, Position})
-
 play(State = {Players, Tables, _Challenger}, #{name := Name, auth := Auth}, Move) ->
   case maps:is_key(Name, Players) of
     true ->
@@ -112,4 +109,3 @@ init([]) ->
 
 go() ->
   gen_server:start_link(?MODULE, [], []).
-
