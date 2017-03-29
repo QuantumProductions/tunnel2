@@ -108,4 +108,45 @@ init([]) ->
   {ok, {Players, Tables, Challenger}}.
 
 go() ->
-  gen_server:start_link(?MODULE, [], []).
+  {ok, Self} = gen_server:start_link(?MODULE, [], []),
+  {ok, _Tref} = timer:apply_after(1000, ?MODULE, update, [start, Self, erlang:timestamp()]),
+  {ok, Self}.
+
+gameFinished(#{status := playing}) -> false;
+gameFinished(_) -> true.
+
+removedTableData(TableData, Pid) ->
+  case maps:is_key(Pid, TableData) of
+    true ->
+      {_, Remaining} = maps:take(Pid, TableData),
+      Remaining;
+    false ->
+      TableData
+  end.
+
+update(Tables) ->
+  update(maps:keys(Tables), Tables, #{}).
+
+update(start, Self, Then) ->
+  Delta = timer:now_diff(erlang:timestamp(), Then) / 10000,
+  {ok, _Tref} = timer:apply_after(1000, ?MODULE, update, [start, Self, erlang:timestamp()]),
+  s:s(Self, {update, Delta});
+  
+update(tables, _Delta, {Tables, Challenger, HallPid, Time}) ->
+  Time2 = Time,
+  Tables2 = update(Tables),
+  {Tables2, Challenger, HallPid, Time2};
+
+update([], _, Cache) ->
+  Cache;
+update([ HPid | T], TableData, Cache) ->
+  TableStatus = s:s(HPid, info),
+  case gameFinished(TableStatus) of
+    true ->
+      TableData2 = removedTableData(TableData, HPid),
+      update(T, TableData2, Cache);
+    false ->
+      SingleTableCache = s:s(HPid, info),
+      Cache2 = maps:put(cache, SingleTableCache, Cache),
+      update(T, TableData, Cache2)
+  end.
