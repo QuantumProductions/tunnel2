@@ -99,7 +99,9 @@ handle_call({join, PlayerData}, _, State) ->
   {reply, Response, State2};
 handle_call({play, Player, Move}, _, State) ->
   {Response, State2} = play(State, Player, Move),
-  {reply, Response, State2}.
+  {reply, Response, State2};
+handle_call({update, _Delta}, _, State) ->
+  {reply, State, State}.
 
 init([]) -> 
   Players = #{},
