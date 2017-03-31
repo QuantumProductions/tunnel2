@@ -53,12 +53,12 @@ place(wallable, WallDirection, Board, X, Position) ->
 takeStatus(Board, x) ->
   case length(contiguous(Board, x)) of
     0 -> owin;
-    _ -> ok
+    _ -> playing
   end;
 takeStatus(Board, o) ->
   case length(contiguous(Board, o)) of
     0 -> xwin;
-    _ -> ok
+    _ -> playing
   end.
 
 recent({recent, _, _}) -> true;

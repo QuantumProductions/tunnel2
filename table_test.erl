@@ -64,3 +64,24 @@ slices_test() ->
   s:s(Table, {place, take, x, {4, 3}}),
   #{actions := Actions} = s:s(Table, info),
   {#{x := {_, 1}, o := {3, _}}, o} = Actions.
+
+win_test() ->
+  {ok, Table} = table:go(),
+  s:s(Table, {place, take, x, {2, 1}}),
+  s:s(Table, {place, take, o, {5, 4}}),
+  s:s(Table, {place, take, o, {5, 3}}),
+  s:s(Table, {place, take, x, {3, 1}}),
+  s:s(Table, {place, take, x, {3, 2}}),
+  s:s(Table, {place, take, o, {5, 2}}),
+  s:s(Table, {place, take, o, {5, 1}}),
+  s:s(Table, {place, take, x, {3, 3}}),
+  s:s(Table, {place, take, x, {2, 3}}),
+  s:s(Table, {place, take, o, {4, 1}}),
+  s:s(Table, {place, take, o, {3, 1}}),
+  s:s(Table, {place, take, x, {1, 2}}),
+  s:s(Table, {place, take, x, {1, 3}}),
+  s:s(Table, {place, take, x, {1, 4}}),
+  s:s(Table, {place, take, o, {2, 1}}),
+  s:s(Table, {place, take, o, {1, 1}}),
+  #{status := Status} = s:s(Table, info),  
+  won = Status.

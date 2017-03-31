@@ -101,7 +101,8 @@ handle_call({play, Player, Move}, _, State) ->
   {Response, State2} = play(State, Player, Move),
   {reply, Response, State2};
 handle_call({update, _Delta}, _, State) ->
-  {reply, State, State}.
+  State2 = update(tables, State)
+  {reply, State2, State2)}.
 
 init([]) -> 
   Players = #{},
@@ -134,14 +135,15 @@ update(start, Self, Then) ->
   {ok, _Tref} = timer:apply_after(1000, ?MODULE, update, [start, Self, erlang:timestamp()]),
   s:s(Self, {update, Delta});
   
-update(tables, _Delta, {Tables, Challenger, HallPid, Time}) ->
-  Time2 = Time,
-  Tables2 = update(Tables),
-  {Tables2, Challenger, HallPid, Time2};
+update(tables, {Players, Tables, Challenger}) ->
+  {Players2, Tables2} = update(Tables, Players)
+  {Players2, Tables2, Challenger}
 
+update(Tables, Players) ->
+  update(maps:keys(Tables), Tables, Players, #{}).
 update([], _, Cache) ->
   Cache;
-update([ HPid | T], TableData, Cache) ->
+update([ HPid | T], TableData, Players, Cache) ->
   TableStatus = s:s(HPid, info),
   case gameFinished(TableStatus) of
     true ->
@@ -152,3 +154,4 @@ update([ HPid | T], TableData, Cache) ->
       Cache2 = maps:put(cache, SingleTableCache, Cache),
       update(T, TableData, Cache2)
   end.
+
