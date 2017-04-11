@@ -115,8 +115,10 @@ go() ->
   {ok, _Tref} = timer:apply_after(1000, ?MODULE, update, [start, Self, erlang:timestamp()]),
   {ok, Self}.
 
-gameFinished(#{status := playing}) -> false;
-gameFinished(_) -> true.
+% gameFinished(#{status := playing}) -> false;
+% gameFinished(_) -> true.
+
+shouldRemoveTable(_) -> false.
 
 removedTableData(TableData, Pid) ->
   case maps:is_key(Pid, TableData) of
@@ -142,7 +144,8 @@ update([], _, Players, Cache) ->
   {Players, Cache};
 update([ HPid | T], TableData, Players, Cache) ->
   TableStatus = s:s(HPid, info),
-  case gameFinished(TableStatus) of
+  % case gameFinished(TableStatus) of
+  case shouldRemoveTable(TableStatus) of
     true ->
       TableData2 = removedTableData(TableData, HPid),
       update(T, TableData2, Players, Cache);

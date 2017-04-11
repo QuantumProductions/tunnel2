@@ -56,6 +56,8 @@ finished_game_test() ->
   {ok, Room} = room:go(),
   {ok, #{auth := AX}} = s:s(Room, {join, #{name => "Marisfrolg"}}),
   {ok, #{auth := AO}} = s:s(Room, {join, #{name => "Blandline"}}),
+  {_Players, Tables, _Challenger} = s:s(Room, debug),
+  [FirstPid] = maps:keys(Tables),
   s:s(Room, {play, #{name => "Marisfrolg", auth => AX}, {take, {2, 1}}}),
   s:s(Room, {play, #{name => "Blandline", auth => AO}, {take, {5, 4}}}),
   s:s(Room, {play, #{name => "Blandline", auth => AO}, {take, {5, 3}}}),
@@ -63,8 +65,8 @@ finished_game_test() ->
   s:s(Room, {play, #{name => "Marisfrolg", auth => AX}, {take, {3, 2}}}),
   s:s(Room, {play, #{name => "Blandline", auth => AO}, {take, {5, 2}}}),
   s:s(Room, {play, #{name => "Blandline", auth => AO}, {take, {5, 1}}}),
-  s:s(Room, {play, #{name => "Marisfrolg", auth => AX}, {take, {2, 3}}}),
   s:s(Room, {play, #{name => "Marisfrolg", auth => AX}, {take, {3, 3}}}),
+  s:s(Room, {play, #{name => "Marisfrolg", auth => AX}, {take, {4, 3}}}),
   s:s(Room, {play, #{name => "Blandline", auth => AO}, {take, {4, 1}}}),
   s:s(Room, {play, #{name => "Blandline", auth => AO}, {take, {3, 1}}}),
   s:s(Room, {play, #{name => "Marisfrolg", auth => AX}, {take, {1, 2}}}),
@@ -73,6 +75,6 @@ finished_game_test() ->
   s:s(Room, {play, #{name => "Blandline", auth => AO}, {take, {2, 1}}}),
   s:s(Room, {play, #{name => "Blandline", auth => AO}, {take, {1, 1}}}),
   s:s(Room, {update, 1000}),
-  Debug = s:s(Room, debug),
-  Debug.
+  {_Players, #{FirstPid := #{status := won}}, _Challenger} = s:s(Room, debug).
+  
 
