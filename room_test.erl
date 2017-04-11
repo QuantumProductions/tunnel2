@@ -76,11 +76,3 @@ finished_game_test() ->
   Debug = s:s(Room, debug),
   Debug.
 
-
-
-
-
-
-
-
-

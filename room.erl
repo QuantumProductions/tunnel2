@@ -127,9 +127,6 @@ removedTableData(TableData, Pid) ->
       TableData
   end.
 
-update(Tables) ->
-  update(maps:keys(Tables), Tables, #{}).
-
 update(tables, {Players, Tables, Challenger}) ->
   {Players2, Tables2} = update(Tables, Players),
   {Players2, Tables2, Challenger};
@@ -148,10 +145,10 @@ update([ HPid | T], TableData, Players, Cache) ->
   case gameFinished(TableStatus) of
     true ->
       TableData2 = removedTableData(TableData, HPid),
-      update(T, TableData2, Cache);
+      update(T, TableData2, Players, Cache);
     false ->
       SingleTableCache = s:s(HPid, info),
-      Cache2 = maps:put(cache, SingleTableCache, Cache),
-      update(T, TableData, Cache2)
+      Cache2 = maps:put(HPid, SingleTableCache, Cache),
+      update(T, TableData, Players, Cache2)
   end.
 
