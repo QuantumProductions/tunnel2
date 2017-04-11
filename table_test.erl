@@ -84,4 +84,4 @@ win_test() ->
   s:s(Table, {place, take, o, {2, 1}}),
   s:s(Table, {place, take, o, {1, 1}}),
   #{status := Status} = s:s(Table, info),  
-  won = Status.
+  owin = Status.

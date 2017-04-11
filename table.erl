@@ -4,9 +4,9 @@
 processResult(State = {#{status := playing}, _BoardPid, ActionsPid}, {ok, NewBoard, Slices, RecentTaken}) ->
   s:s(ActionsPid, {move, Slices, RecentTaken}),
   {{ok, NewBoard}, State};
-processResult({#{status := playing}, BoardPid, ActionsPid}, {_Won, NewBoard, Slices, RecentTaken}) ->
+processResult({#{status := playing}, BoardPid, ActionsPid}, {Win, NewBoard, Slices, RecentTaken}) ->
   s:s(ActionsPid, {move, Slices, RecentTaken}),
-  {{won, NewBoard}, {#{status => won}, BoardPid, ActionsPid}};
+  {{Win, NewBoard}, {#{status => Win}, BoardPid, ActionsPid}};
 processResult(State, {error, Error, _Board}) ->
   {{error, Error}, State}.
 
