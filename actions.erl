@@ -1,6 +1,7 @@
 -module(actions).
 -behaviour(gen_server).
 -compile(export_all).
+-define(STARTING, 24000).
 
 advancePlayers(NewCurrent, NewOther, NextCurrentPlayer) ->
   Map = maps:new(),
@@ -82,7 +83,8 @@ go() ->
   gen_server:start_link(?MODULE, [], []).
 
 defaultState() ->
-  {defaultPlayers(), x}.
+  {defaultPlayers(), x, startingTimes()}.
+  
 
 init([]) -> 
   {ok, defaultState()}.
