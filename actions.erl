@@ -62,10 +62,17 @@ handle_call({move, Slices, Recent}, _From, {Players, Current, Clock, CallbackPid
   {Players2, Current2} = move({start, Slices, Recent}, {Players, Current}),
   State2 = {Players2, Current2, Clock, CallbackPid},
   {reply, State2, State2};
-
+% todo: set over
+% todo refactor timeout into over
+handle_call({tick, Delta}, _, State = {_Players, _Current, {_Times, over}, _CallbackPid}) ->
+  {reply, State, State};
+handle_call({tick, Delta}, _, State = {_Players, _Current, {_Times, timeout}, _CallbackPid}) ->
+  {reply, State, State};
 handle_call({tick, Delta}, _, State = {Players, Current, Clock, CallbackPid}) ->
   case tick(Clock, Delta, Current) of
-    timeout -> {reply, timeout, State};
+    timeout -> 
+      s:s(CallbackPid, {timeout, Current});
+      {reply, timeout, State};
     over -> {reply, over, State};
     NewClock -> 
       State2 = {Players, Current, NewClock, CallbackPid},
