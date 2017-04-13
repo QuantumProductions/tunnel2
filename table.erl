@@ -25,8 +25,17 @@ handle_call(info, _, State = {#{status := Status}, BoardPid, ActionsPid}) ->
             actions => ActionsInfo}, State};
 handle_call({assign_actions, ActionsPid}, _, {Status, BoardPid}) ->
   State2 = {Status, BoardPid, ActionsPid},
-  {reply, State2, State2}.
+  {reply, State2, State2};
   % ask mailing list about this pattern?
+handle_call({timeout, TimeoutPlayer}, _, {#{status := playing}, BoardPid, ActionsPid}) ->
+  WinStatus = case TimeoutPlayer of
+    x -> owin;
+    o -> xwin
+  end,
+  State2 = {#{status => WinStatus}, BoardPid, ActionsPid},
+  {reply, State2, State2};
+handle_call(_, _, State) ->
+  {reply, State, State}.
 
 init([]) -> 
   {ok, BoardPid} = board:go(),
