@@ -13,21 +13,28 @@ processResult(State, {error, Error, _Board}) ->
 handle_call(debug, _, State) ->
   {reply, State, State};
 handle_call({place, Action, Player, Position}, _, State = {#{status := _}, BoardPid, ActionsPid}) ->
-  {_, CurrentPlayer} = s:s(ActionsPid, info),
+  {_, CurrentPlayer, _, _} = s:s(ActionsPid, info),
   Result = s:s(BoardPid, {place, CurrentPlayer, {Action, Player, Position}}),
   {Response, State2} = processResult(State, Result),
   {reply, Response, State2};  
 handle_call(info, _, State = {#{status := Status}, BoardPid, ActionsPid}) ->
   BoardInfo = s:s(BoardPid, info),
-  ActionsInfo = s:s(ActionsPid, info),
+  {Players, Current, _, _} = s:s(ActionsPid, info),
+  ActionsInfo = {Players, Current},
   {reply, #{status => Status, board => BoardInfo,
-            actions => ActionsInfo}, State}.
+            actions => ActionsInfo}, State};
+handle_call({assign_actions, ActionsPid}, _, {Status, BoardPid}) ->
+  State2 = {Status, BoardPid, ActionsPid},
+  {reply, State2, State2}.
+  % ask mailing list about this pattern?
 
 init([]) -> 
   {ok, BoardPid} = board:go(),
-  {ok, ActionsPid} = actions:go(),
-  {ok, {#{status => playing}, BoardPid, ActionsPid}}.
+  {ok, {#{status => playing}, BoardPid}}.
 
 go() ->
-  gen_server:start_link(?MODULE, [], []).
+  {ok, Pid} = gen_server:start_link(?MODULE, [], []),
+  {ok, ActionsPid} = actions:go(Pid),
+  s:s(Pid, {assign_actions, ActionsPid}),
+  {ok, Pid}.
 

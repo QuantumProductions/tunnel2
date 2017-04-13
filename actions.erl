@@ -2,7 +2,7 @@
 -behaviour(gen_server).
 -compile(export_all).
 -define(INTERVAL, 250).
--define(STARTING, 24000).
+-define(STARTING, 2400).
 -define(BONUS, 0).
 
 advancePlayers(NewCurrent, NewOther, NextCurrentPlayer) ->
@@ -54,21 +54,21 @@ recentBonus(true) ->
 
 handle_call(info, _From, State) ->
   {reply, State, State};
-handle_call({current, Player}, _From, State = {_Players, Current, _Clock}) ->
+handle_call({current, Player}, _From, State = {_Players, Current, _Clock, _CallbackPid}) ->
   {reply, Player =:= Current, State};  
 handle_call(terminate, _From, State) ->
   {stop, normal, ok, State};
-handle_call({move, Slices, Recent}, _From, {Players, Current, Clock}) ->
+handle_call({move, Slices, Recent}, _From, {Players, Current, Clock, CallbackPid}) ->
   {Players2, Current2} = move({start, Slices, Recent}, {Players, Current}),
-  State2 = {Players2, Current2, Clock},
+  State2 = {Players2, Current2, Clock, CallbackPid},
   {reply, State2, State2};
 
-handle_call({tick, Delta}, _, State = {Players, Current, Clock}) ->
+handle_call({tick, Delta}, _, State = {Players, Current, Clock, CallbackPid}) ->
   case tick(Clock, Delta, Current) of
     timeout -> {reply, timeout, State};
     over -> {reply, over, State};
     NewClock -> 
-      State2 = {Players, Current, NewClock},
+      State2 = {Players, Current, NewClock, CallbackPid},
       {reply, State2, State2}
   end;
 
@@ -130,13 +130,13 @@ handle_info(Msg, State) ->
   io:format("Unexpected message: ~p~n",[Msg]),
   {noreply, State }.
 
-go() ->
-  {ok, Pid} = gen_server:start_link(?MODULE, [], []),
+go(CallbackPid) ->
+  {ok, Pid} = gen_server:start_link(?MODULE, CallbackPid, []),
   timer:apply_after(?INTERVAL, ?MODULE, run, [Pid, erlang:timestamp()]),
   {ok, Pid}.
 
-init([]) -> 
-  {ok, defaultState()}.
+init(CallbackPid) -> 
+  {ok, defaultState(CallbackPid)}.
 
-defaultState() ->
-  {defaultPlayers(), x, startingClock()}.
+defaultState(CallbackPid) ->
+  {defaultPlayers(), x, startingClock(), CallbackPid}.
