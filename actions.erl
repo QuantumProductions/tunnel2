@@ -1,22 +1,25 @@
 -module(actions).
 -behaviour(gen_server).
 -compile(export_all).
+-define(INTERVAL, 250).
 -define(STARTING, 24000).
+-define(BONUS, 0).
 
 advancePlayers(NewCurrent, NewOther, NextCurrentPlayer) ->
   Map = maps:new(),
   Map2 = maps:put(NextCurrentPlayer, NewCurrent, Map),
   maps:put(otherPlayer(NextCurrentPlayer), NewOther, Map2).
+  % update existing?
 
 move({start, Slices, RecentTaken}, {Players, Current}) ->
   CurrentPlayer = maps:get(Current, Players),
   OtherPlayer = maps:get(otherPlayer(Current), Players),
   case move(slices, Slices, RecentTaken, CurrentPlayer, OtherPlayer) of
     {ok, {NewCurrent, NewOther}} -> 
-      {ok, {advancePlayers(NewCurrent, NewOther, Current), Current}};
+      {advancePlayers(NewCurrent, NewOther, Current), Current};
     {swap, {NewCurrent, NewOther}} -> 
       NewPlayer = otherPlayer(Current),
-      {swap, {advancePlayers(NewCurrent, NewOther, NewPlayer), NewPlayer}}
+      {advancePlayers(NewCurrent, NewOther, NewPlayer), NewPlayer}
   end.
 move(slices, Slices, RecentTaken, {Active, Next}, OtherPlayer) ->
   move(recent, RecentTaken, {Active - 1, Next + sliceBonus(Slices)}, OtherPlayer).
@@ -51,19 +54,67 @@ recentBonus(true) ->
 
 handle_call(info, _From, State) ->
   {reply, State, State};
-handle_call({current, Player}, _From, {Players, Current}) ->
-  {reply, Player =:= Current, {Players, Current}};  
-handle_call(restart, _, _) ->
-  NewState = defaultState(),
-  {reply, NewState, NewState};
+handle_call({current, Player}, _From, State = {_Players, Current, _Clock}) ->
+  {reply, Player =:= Current, State};  
 handle_call(terminate, _From, State) ->
   {stop, normal, ok, State};
-  % API for {move, how many branches sliced, recent tile taken true or false}
-handle_call({move, Slices, Recent}, _From, State) ->
-  {Status, State2} = move({start, Slices, Recent}, State),
-  {reply, {Status, State2}, State2};
+handle_call({move, Slices, Recent}, _From, {Players, Current, Clock}) ->
+  {Players2, Current2} = move({start, Slices, Recent}, {Players, Current}),
+  State2 = {Players2, Current2, Clock},
+  {reply, State2, State2};
+
+handle_call({tick, Delta}, _, State = {Players, Current, Clock}) ->
+  case tick(Clock, Delta, Current) of
+    timeout -> {reply, timeout, State};
+    over -> {reply, over, State};
+    NewClock -> 
+      State2 = {Players, Current, NewClock},
+      {reply, State2, State2}
+  end;
+
 handle_call(_, _, State) ->
   {reply, State, State}.
+
+% clock
+  
+startingClock() ->
+  {startingTimes(), started}.
+
+swap({Times, timeout}) ->
+  {Times, timeout};
+swap({Times, Status}) ->
+  {Times, Status}.
+
+run(Pid, Then) ->
+  Delta = timer:now_diff(erlang:timestamp(), Then) / 10000,
+  case s:s(Pid, {tick, Delta}) of
+    {Times, timeout} ->
+      {Times, timeout};
+    {Times, over} ->
+      {Times, over};
+    _ -> 
+      timer:apply_after(?INTERVAL, ?MODULE, run, [Pid, erlang:timestamp()])
+  end.
+
+tick({Times, over}, _Delta, _Current) ->
+  {Times, over};
+tick({Times, timeout}, _Delta, _Current) ->
+  {Times, timeout};
+tick({Times, started}, Delta, Current) ->
+  Time = maps:get(Current, Times),
+  Now = Time - Delta,
+  case Now of
+    Now when Now > 0 ->
+      Times2 = maps:put(Current, Now, Times),
+      {Times2, started};
+    _ ->
+      {Times, timeout}
+  end.
+
+startingTimes() ->
+  Map = maps:new(),
+  MapX = maps:put(x, ?STARTING, Map),
+  maps:put(o, ?STARTING, MapX).
 
 terminate(normal, State) ->
     io:format("Actions.~p~n", [State]),
@@ -80,15 +131,12 @@ handle_info(Msg, State) ->
   {noreply, State }.
 
 go() ->
-  gen_server:start_link(?MODULE, [], []).
-
-defaultState() ->
-  {defaultPlayers(), x, startingTimes()}.
-  
+  {ok, Pid} = gen_server:start_link(?MODULE, [], []),
+  timer:apply_after(?INTERVAL, ?MODULE, run, [Pid, erlang:timestamp()]),
+  {ok, Pid}.
 
 init([]) -> 
   {ok, defaultState()}.
 
-
-% account for bonus AP
-% keywords will work here.
+defaultState() ->
+  {defaultPlayers(), x, startingClock()}.
