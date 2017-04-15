@@ -77,10 +77,11 @@ finished_game_test() ->
   s:s(Room, {update, 1000}),
   {_Players, #{FirstPid := #{status := owin}}, _Challenger} = s:s(Room, debug).
   
-% timeout_game_test() ->
-%   {ok, Room} = room:go(),
-%   {ok, #{auth := AX}} = s:s(Room, {join, #{name => "Marisfrolg"}}),
-%   {ok, #{auth := AO}} = s:s(Room, {join, #{name => "Blandline"}}),  
-%   {_Players, Tables, _Challenger} = s:s(Room, debug),
-%   [FirstPid] = maps:keys(Tables),
-%   timer:sleep()
+timeout_game_test() ->
+  false = true.
+  % {ok, Room} = room:go(),
+  % {ok, #{auth := AX}} = s:s(Room, {join, #{name => "Marisfrolg"}}),
+  % {ok, #{auth := AO}} = s:s(Room, {join, #{name => "Blandline"}}),  
+  % {_Players, Tables, _Challenger} = s:s(Room, debug),
+  % [FirstPid] = maps:keys(Tables),
+  % timer:sleep()
