@@ -3,6 +3,7 @@
 -compile(export_all).
 -define(INTERVAL, 250).
 -define(STARTING, 2400).
+ % -define(STARTING, 2).
 -define(BONUS, 0).
 
 advancePlayers(NewCurrent, NewOther, NextCurrentPlayer) ->
@@ -66,14 +67,13 @@ handle_call({move, Slices, Recent}, _From, {Players, Current, Clock, CallbackPid
 % todo refactor timeout into over
 handle_call({tick, _Delta}, _, State = {_Players, _Current, {_Times, over}, _CallbackPid}) ->
   {reply, State, State};
-handle_call({tick, _Delta}, _, State = {_Players, _Current, {_Times, timeout}, _CallbackPid}) ->
-  {reply, State, State};
 handle_call({tick, Delta}, _, State = {Players, Current, Clock, CallbackPid}) ->
   case tick(Clock, Delta, Current) of
-    timeout -> 
+    {Times, timeout} ->
       s:s(CallbackPid, {timeout, Current}),
-      {reply, timeout, State};
-    over -> {reply, over, State};
+      State2 = {Players, Current, {Times, over}, CallbackPid},
+      {reply, over, State2};
+    {_, over} -> {reply, over, State};
     NewClock -> 
       State2 = {Players, Current, NewClock, CallbackPid},
       {reply, State2, State2}
@@ -83,7 +83,6 @@ handle_call(_, _, State) ->
   {reply, State, State}.
 
 % clock
-  
 startingClock() ->
   {startingTimes(), started}.
 
@@ -95,14 +94,12 @@ swap({Times, Status}) ->
 run(Pid, Then) ->
   Delta = timer:now_diff(erlang:timestamp(), Then) / 10000,
   case s:s(Pid, {tick, Delta}) of
-    {Times, timeout} ->
-      {Times, timeout};
     {Times, over} ->
       {Times, over};
     _ -> 
       timer:apply_after(?INTERVAL, ?MODULE, run, [Pid, erlang:timestamp()])
   end.
-
+% clock tick
 tick({Times, over}, _Delta, _Current) ->
   {Times, over};
 tick({Times, timeout}, _Delta, _Current) ->

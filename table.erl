@@ -46,4 +46,3 @@ go() ->
   {ok, ActionsPid} = actions:go(Pid),
   s:s(Pid, {assign_actions, ActionsPid}),
   {ok, Pid}.
-
