@@ -16,8 +16,9 @@ handle_call({place, Action, Player, Position}, _, State = {#{status := _}, Board
   {_, CurrentPlayer, _, _} = s:s(ActionsPid, info),
   Result = s:s(BoardPid, {place, CurrentPlayer, {Action, Player, Position}}),
   {Response, State2} = processResult(State, Result),
-  {reply, Response, State2};  
-handle_call(info, _, State = {#{status := Status}, BoardPid, ActionsPid}) ->
+  {reply, Response, State2};    
+handle_call({info, Delta}
+  % todo: update overtime with delta
   BoardInfo = s:s(BoardPid, info),
   {Players, Current, _, _} = s:s(ActionsPid, info),
   ActionsInfo = {Players, Current},

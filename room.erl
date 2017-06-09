@@ -100,8 +100,8 @@ handle_call({join, PlayerData}, _, State) ->
 handle_call({play, Player, Move}, _, State) ->
   {Response, State2} = play(State, Player, Move),
   {reply, Response, State2};
-handle_call({update, _Delta}, _, State) ->
-  State2 = update(tables, State),
+handle_call({update, Delta}, _, State) ->
+  State2 = update(tables, Delta, State),
   {reply, State2, State2}.
 
 init([]) -> 
@@ -129,29 +129,34 @@ removedTableData(TableData, Pid) ->
       TableData
   end.
 
-update(tables, {Players, Tables, Challenger}) ->
-  {Players2, Tables2} = update(Tables, Players),
+update(tables, Delta, {Players, Tables, Challenger}) ->
+  {Players2, Tables2} = update(Tables, Delta, Players),
   {Players2, Tables2, Challenger};
-update(Tables, Players) ->
-  update(maps:keys(Tables), Tables, Players, #{}).
-
 update(start, Self, Then) ->
   Delta = timer:now_diff(erlang:timestamp(), Then) / 10000,
   {ok, _Tref} = timer:apply_after(1000, ?MODULE, update, [start, Self, erlang:timestamp()]),
-  s:s(Self, {update, Delta}).
+  s:s(Self, {update, Delta});
+update(Tables, Delta, Players) ->
+  update(maps:keys(Tables), Tables, Delta, Players, #{}).
 
-update([], _, Players, Cache) ->
+update([], _TableData, _Delta, Players, Cache) ->
   {Players, Cache};
-update([ HPid | T], TableData, Players, Cache) ->
+update([ HPid | T], TableData, Delta, Players, Cache) ->
   TableStatus = s:s(HPid, info),
-  % case gameFinished(TableStatus) of
-  case shouldRemoveTable(TableStatus) of
+  case gameFinished(TableStatus) of
     true ->
-      TableData2 = removedTableData(TableData, HPid),
-      update(T, TableData2, Players, Cache);
+        % add delta tim
+        % if delta pas max, recur without appending
     false ->
-      SingleTableCache = s:s(HPid, info),
-      Cache2 = maps:put(HPid, SingleTableCache, Cache),
-      update(T, TableData, Players, Cache2)
-  end.
+      Cache2 = maps:put(HPid, TableStatus, Cache),
+      update(T, TableData, Delta, Players, Cache2)
+  % case shouldRemoveTable(TableStatus) of
+  %   true ->
+  %     TableData2 = removedTableData(TableData, HPid),
+  %     update(T, TableData2, Delta, Players, Cache);
+  %   false ->
+  %     SingleTableCache = s:s(HPid, info),
+  %     Cache2 = maps:put(HPid, SingleTableCache, Cache),
+  %     update(T, TableData, Delta, Players, Cache2)
+  % end.
 
