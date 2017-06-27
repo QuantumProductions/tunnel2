@@ -115,8 +115,8 @@ go() ->
   {ok, _Tref} = timer:apply_after(1000, ?MODULE, update, [start, Self, erlang:timestamp()]),
   {ok, Self}.
 
-% gameFinished(#{status := playing}) -> false;
-% gameFinished(_) -> true.
+gameFinished(#{status := over}) -> true;
+gameFinished(_) -> false.
 
 shouldRemoveTable(_) -> false.
 
@@ -145,11 +145,11 @@ update([ HPid | T], TableData, Delta, Players, Cache) ->
   TableStatus = s:s(HPid, info),
   case gameFinished(TableStatus) of
     true ->
-        % add delta tim
-        % if delta pas max, recur without appending
+        update(T, TableData, Delta, Players, Cache);
     false ->
       Cache2 = maps:put(HPid, TableStatus, Cache),
       update(T, TableData, Delta, Players, Cache2)
+  end.
   % case shouldRemoveTable(TableStatus) of
   %   true ->
   %     TableData2 = removedTableData(TableData, HPid),

@@ -5,6 +5,7 @@
 -define(STARTING, 2400).
  % -define(STARTING, 2).
 -define(BONUS, 0).
+-define(TIMEOUT, 600).
 
 advancePlayers(NewCurrent, NewOther, NextCurrentPlayer) ->
   Map = maps:new(),
@@ -65,19 +66,24 @@ handle_call({move, Slices, Recent}, _From, {Players, Current, Clock, CallbackPid
   {reply, State2, State2};
 % todo: set over
 % todo refactor timeout into over
-handle_call({tick, _Delta}, _, State = {_Players, _Current, {_Times, over}, _CallbackPid}) ->
-  {reply, State, State};
-handle_call({tick, Delta}, _, State = {Players, Current, Clock, CallbackPid}) ->
-  case tick(Clock, Delta, Current) of
-    {Times, timeout} ->
-      s:s(CallbackPid, {timeout, Current}),
-      State2 = {Players, Current, {Times, over}, CallbackPid},
-      {reply, over, State2};
-    {_, over} -> {reply, over, State};
-    NewClock -> 
-      State2 = {Players, Current, NewClock, CallbackPid},
-      {reply, State2, State2}
+handle_call({tick, Delta}, _, {Players, Current, {Times, {over, Amount}}, CallbackPid}) ->
+  case Amount of
+    Enough when Enough >= ?TIMEOUT ->
+      s:s(CallbackPid, over);
+    _NotEnough ->
+      timer:apply_after(?INTERVAL, ?MODULE, run, [self, erlang:timestamp()]),
+      {noreply, {Players, Current, {Times, {over, Amount + Delta}}, CallbackPid}}
   end;
+handle_call({tick, Delta}, _, {Players, Current, Clock, CallbackPid}) ->
+  NewClock = newClock(Clock, Delta, Current),
+  case NewClock of
+    {_Times2, timeout} ->
+      s:s(CallbackPid, {timeout, Current});
+    {_Times2, started} ->
+      timer:apply_after(?INTERVAL, ?MODULE, run, [self, erlang:timestamp()])
+  end,
+  State2 = {Players, Current, NewClock, CallbackPid},
+  {noreply, State2};
 
 handle_call(_, _, State) ->
   {reply, State, State}.
@@ -93,18 +99,14 @@ swap({Times, Status}) ->
 
 run(Pid, Then) ->
   Delta = timer:now_diff(erlang:timestamp(), Then) / 10000,
-  case s:s(Pid, {tick, Delta}) of
-    {Times, over} ->
-      {Times, over};
-    _ -> 
-      timer:apply_after(?INTERVAL, ?MODULE, run, [Pid, erlang:timestamp()])
-  end.
+  s:s(Pid, {tick, Delta}).
+
 % clock tick
-tick({Times, over}, _Delta, _Current) ->
-  {Times, over};
-tick({Times, timeout}, _Delta, _Current) ->
+newClock({Times, {over, Amount}}, Delta, _Current) ->
+  {Times, {over, Amount + Delta}};
+newClock({Times, timeout}, _Delta, _Current) ->
   {Times, timeout};
-tick({Times, started}, Delta, Current) ->
+newClock({Times, started}, Delta, Current) ->
   Time = maps:get(Current, Times),
   Now = Time - Delta,
   case Now of

@@ -83,16 +83,17 @@ win_test() ->
   s:s(Table, {place, take, x, {1, 4}}),
   s:s(Table, {place, take, o, {2, 1}}),
   s:s(Table, {place, take, o, {1, 1}}),
-  #{status := Status} = s:s(Table, info),  
-  owin = Status.
+  #{status := Status} = s:s(Table, info),
+  #{status := owin} = Status. 
 
-timeout_x_test() ->
-  {ok, Table} = table:go(),
-  s:s(Table, {timeout, x}),
-  s:s(Table, {timeout, o}),
-  #{status := owin} = s:s(Table, info).
+% timeout_x_test() ->
+%   {ok, Table} = table:go(),
+%   s:s(Table, {timeout, x}),
+%   s:s(Table, {timeout, o}),
+%   % o's timeout should be ignored
+%   #{status := owin} = s:s(Table, info).
 
-timeout_o_test() ->
-  {ok, Table} = table:go(),
-  s:s(Table, {timeout, o}),
-  #{status := xwin} = s:s(Table, info).
+% timeout_o_test() ->
+%   {ok, Table} = table:go(),
+%   s:s(Table, {timeout, o}),
+%   #{status := xwin} = s:s(Table, info).
