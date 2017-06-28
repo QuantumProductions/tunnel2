@@ -82,9 +82,9 @@ win_test() ->
   s:s(Table, {place, take, x, {1, 3}}),
   s:s(Table, {place, take, x, {1, 4}}),
   s:s(Table, {place, take, o, {2, 1}}),
-  s:s(Table, {place, take, o, {1, 1}}),
-  #{status := Status} = s:s(Table, info),
-  #{status := owin} = Status. 
+  Res = s:s(Table, {place, take, o, {1, 1}}),
+  Res.
+  % s:s(Table, info). 
 
 % timeout_x_test() ->
 %   {ok, Table} = table:go(),

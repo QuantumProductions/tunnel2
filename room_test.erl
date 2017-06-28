@@ -11,7 +11,7 @@ join_test() ->
   #{"Marisfrolg"  := #{status := playing, table_pid := FirstPid},
    "Blandline"    := #{status := playing, table_pid := FirstPid}} = Players,
   #{FirstPid      := #{seats  := #{x := "Marisfrolg", o := "Blandline"},
-                       cache := #{status := playing}}} = Tables,
+                       cache := #{status := #{status := playing}}}} = Tables,
    null = Challenger.
 
 cancel_authorized_test() ->
@@ -75,8 +75,7 @@ finished_game_test() ->
   s:s(Room, {play, #{name => "Blandline", auth => AO}, {take, {2, 1}}}),
   s:s(Room, {play, #{name => "Blandline", auth => AO}, {take, {1, 1}}}),
   s:s(Room, {update, 1000}),
-  % {_Players, #{FirstPid := #{status := owin}}, _Challenger}
-  s:s(Room, debug).
+  {_Players, #{FirstPid := #{status := #{status := owin}}}, _Challenger} = s:s(Room, debug).
   
 % timeout_game_test() ->
 %   {ok, Room} = room:go(),

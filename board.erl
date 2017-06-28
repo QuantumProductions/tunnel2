@@ -1,6 +1,5 @@
 -module(board).
 -compile(export_all).
-% -export([place/3, tile/2, defaultBoard/0, startingTile/2]).
 -include_lib("eunit/include/eunit.hrl").
 
 recentTile_test() ->
