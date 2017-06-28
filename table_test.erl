@@ -97,3 +97,15 @@ timeout_o_test() ->
   {ok, Table} = table:go(),
   s:s(Table, {timeout, o}),
   #{status := #{status :=xwin}} = s:s(Table, info).
+
+% actions.erl #6 % -define(STARTING, 2).
+% timeout_won_game_has_over_clock_test() ->
+  % {ok, Table} = table:go(),
+  % s:s(Table, {place, take, x, {2, 1}}),
+  % s:s(Table, {place, take, o, {5, 4}}),
+  % % s:s(Table, {timeout, o}),
+  % timer:sleep(10000),
+  % % {_, _, APid} = s:s(Table, debug),
+  % % Actions = s:s(APid, info),
+  % Info = s:s(Table, debug),
+  % Info.

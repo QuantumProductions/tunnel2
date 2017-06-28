@@ -118,8 +118,6 @@ go() ->
 gameFinished(#{status := over}) -> true;
 gameFinished(_) -> false.
 
-shouldRemoveTable(_) -> false.
-
 removedTableData(TableData, Pid) ->
   case maps:is_key(Pid, TableData) of
     true ->
@@ -150,13 +148,3 @@ update([ HPid | T], TableData, Delta, Players, Cache) ->
       Cache2 = maps:put(HPid, TableStatus, Cache),
       update(T, TableData, Delta, Players, Cache2)
   end.
-  % case shouldRemoveTable(TableStatus) of
-  %   true ->
-  %     TableData2 = removedTableData(TableData, HPid),
-  %     update(T, TableData2, Delta, Players, Cache);
-  %   false ->
-  %     SingleTableCache = s:s(HPid, info),
-  %     Cache2 = maps:put(HPid, SingleTableCache, Cache),
-  %     update(T, TableData, Delta, Players, Cache2)
-  % end.
-
